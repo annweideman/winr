@@ -13,14 +13,6 @@ Ann Marie Weideman, anndo1(at)umbc.edu
 An R package that performs randomization-based adjustment of the win ratio and win odds for covariates and strata.
 
 **Inputs:**
-  * `Rs`:   $M \times N$ (mutation by single-cell) matrix of alternative read counts from single-cell RNA sequencing data. We provide details for a pre-processing pipeline for somatic variant calling in the paper; the scripts for this pipeline can be accessed in our Zenodo repository (https://zenodo.org/record/7931384).
-  * `Xs`:  $M \times N$ (mutation by single-cell) matrix of total read counts (benign + mutated) from single-cell RNA sequencing data.
-  *  `Rb`:  $M \times T$ (mutation by bulk sample) matrix Alternative read counts from bulk DNA whole exome sequencing (WES). We provide details for a pre-processing pipeline for somatic variant calling in the paper; the scripts for this pipeline can be accessed in our Zenodo repository (https://zenodo.org/record/7931384).
-  *  `Xb`: Total read counts (benign + mutated) from bulk DNA whole exome sequencing (WES).
-  *  `alpha` and `beta`:  $1 \times M$ (number of mutations) vectors of mutation specific gene activation ($\alpha$) and gene deactivation ($\beta$) rates. These can be estimated using either the BPSC methodology in function `get_burstiness_bpsc()` (recommended) or the SCALE methodology with function `get_burstiness_scale()`.
-  *  `kappa` and `tau`:   $1 \times 1$ scalars used to compute the sequencing error by $\frac{\kappa}{\kappa + \tau}$. The average error rate of next-generation sequencing is reported to be 0.1\% per nucleotide, so these parameters have been set to default values of $\kappa=1$ and $\tau = 999$ such that $\frac{\kappa}{\kappa + \tau} = 0.001$ (or 0.1\%). 
-  *  `Klist`:   A range of possible numbers of subclones to use for DIC calculations. For each $k$ in Klist, the tree with highest mean posterior density across all post-burn-in iterations and all chains is selected, and then the deviance information criterion (DIC) (of type Gelman or Spiegelhalter) is used to select the optimal configuration. We suggest examining the graph of BIC versus number of subclones to determine the optimal number of subclones. 
-
 * `data`: a dataframe or matrix containing the analysis data. Must be in wide format such that a participant's repeated responses are in a single row, and each response is in a separate column.
 * `pid`: a string indicating the name of the variable corresponding to participant ID.
 * `baseline`: a string indicating the name of the outcome measured at baseline. If not specified, defaults to NULL, and no baseline adjustment is employed.
