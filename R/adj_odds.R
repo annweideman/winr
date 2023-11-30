@@ -21,7 +21,7 @@
 #' Thus, the outcome can be ordered categories or continuous measurements.
 #'
 #' @param covars a vector of strings indicating the names of the covariates
-#' (measured at baseline) used for adjustment. These covariates must be numeric,
+#' (measured at baseline) used for adjustment. These covariates must be numeric
 #' and can  be measured on a binary, categorical, ordered categorical, or
 #' continuous scale. If not specified, defaults to NULL and no covariate
 #' adjustment is employed.
@@ -39,14 +39,21 @@
 #' is reasonably large (e.g., >= 50), number of visits is small (e.g., <=6), and
 #' number of covariates is small (e.g., <=4). Defaults to "small."
 #'
+#' @param sig.level significance level (Type I error probability). Defaults to
+#' 0.05.
+#'
 #' @return
-#' A  dataframe containing: \code{logWR} (natural log-transformed win ratio),
-#' \code{SE_logWR} (standard error of log-transformed win ratio),
-#' \code{Var_logWR} (sample variance of log-transformed win ratio),
-#' \code{Chi_Square} (Pearson's Chi-squared test statistic corresponding to
-#' logWR), \code{p_value} (the p-value corresponding to the Pearson's Chi-squared test
-#' \code{WR} win ratio), \code{LCL_WR} (lower bound of \eqn{(1-\alpha)\times 100\%} CI for WR),
-#' \code{UCL_WR} (upper bound of \eqn{(1-\alpha)\times 100\%} CI for WR)
+#'
+#' A  dataframe containing:
+#' \item{logWR}{natural log-transformed win ratio}
+#' \item{SE_logWR}{standard error of log-transformed win ratio}
+#' \item{Var_logWR}{sample variance of log-transformed win ratio}
+#' \item{Chi_Square}{Pearson's Chi-squared test statistic corresponding to
+#' logWR}
+#' \item{p_value}{p-value corresponding to the Pearson's Chi-squared test}
+#' \item{WR}{win ratio}
+#' \item{LCL_WR}{lower bound of \eqn{(1-\alpha/2)\times 100\%} CI for WR}
+#' \item{UCL_WR}{upper bound of \eqn{(1-\alpha/2)\times 100\%} CI for WR}
 #'
 #' @examples
 #'
@@ -68,10 +75,15 @@
 #' # Interaction between center and sex
 #' data_resp$Center_Sex<-(data_resp$Center+1)*(data_resp$Sex+1)
 #'
-#' adj_winodds(data=resp, pid="new_ID", baseline="Baseline",
+#' adj_winodds(data=resp,
+#'             pid="new_ID",
+#'             baseline="Baseline",
 #'             outcome=c("Visit1","Visit2","Visit3","Visit4"),
 #'             covars= c("Sex","Age"),
-#'             strata="Center", arm="Treatment", method="small")
+#'             strata="Center",
+#'             arm="Treatment",
+#'             method="small",
+#'             sig.level=0.05)
 #'
 #' #----------------------
 #' # Skin example
@@ -85,15 +97,107 @@
 #' # Remove missing rows
 #' skin<-skin[complete.cases(skin), ]
 #'
-#' adj_winodds(data=skin, pid="ID", baseline=NULL,
+#' adj_winodds(data=skin,
+#'             pid="ID",
+#'             baseline=NULL,
 #'             outcome=c("R1","R2","R3"),
 #'             covars= c("Stage4","Stage5"),
-#'             strata="center2", arm="TRT", method="small")
+#'             strata="center2",
+#'             arm="TRT",
+#'             method="small",
+#'             sig.level=0.05)
 #'
 #' @export
 
 adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
-                      strata=NULL, arm, method="small"){
+                      strata=NULL, arm, method="small", sig.level=0.05){
+
+  # check arguments
+  if (!inherits(data, c("data.frame","matrix"))){
+    stop("data must be of class \"data.frame\" or \"matrix\"")
+  }
+
+  if (!(pid %in% colnames(data))){
+    stop("data must contain column \"pid\"")
+  }
+
+  if (!is.character(pid)){
+    stop("pid must be of type \"character\"")
+  }
+
+  if (length(pid)>1){
+    stop("pid must be of length one")
+  }
+
+  if (!is.null(baseline)){
+    if(!(baseline %in% colnames(data))){
+      stop("data must contain column \"baseline\" since it is specified")
+    }
+  }
+
+  if (!is.null(baseline)){
+    if (!is.character(baseline)){
+      stop("baseline must be of type \"character\" since it is specified")
+    }
+  }
+
+  if (length(baseline)>1){
+    stop("baseline must be of length one")
+  }
+
+  if (!all(outcome %in% colnames(data))){
+    stop("data must contain variable names in \"outcome\" since it is specified")
+  }
+
+  if (!is.character(outcome)){
+    stop("outcome must be of type \"character\"")
+  }
+
+  if (!is.null(covars)){
+    if(!all(covars %in% colnames(data))){
+      stop("data must contain variable names in \"covars\" since it is specified")
+    }
+  }
+
+  if (!is.null(covars)){
+    if (!is.character(covars)){
+      stop("covars must be of type \"character\" since it is specified")
+    }
+  }
+
+  if (is.null(strata)){
+    if(!(strata %in% data)){
+      stop("data must contain column \"strata\" since it is specified")
+    }
+  }
+
+  if (length(strata)>1){
+    stop("strata must be of length one")
+  }
+
+  if (!(arm %in% colnames(data))){
+    stop("data must contain column \"arm\"")
+  }
+
+  if (any_of((data[,eval(arm)]-floor(data[,eval(arm)]))!=0)){
+    stop("arm must only contain integer values")
+  }
+
+  if (length(arm)>1){
+    stop("arm must be of length one")
+  }
+
+  if (!(method %in% c("small","large"))){
+    stop("method must be either \"small\" or \"large\"")
+  }
+
+  if (length(method)>1){
+    stop("method must be of length one")
+  }
+
+  if (!is.numeric(sig.level)){
+    stop("sig.level must be of class numeric")
+  }
 
   outcome<-c(baseline, outcome)
 
@@ -647,8 +751,8 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     Chi_Square<-(b/sqrt(diag(Vb)))^2
     p_value<-pchisq(Chi_Square, 1, lower.tail = FALSE)
     WO<-exp(b)
-    UCL_WO<-exp(b+1.96*SE_logWO)
-    LCL_WO<-exp(b-1.96*SE_logWO)
+    UCL_WO<-exp(b+qnorm(p=sig.level/2, lower.tail=F)*SE_logWO)
+    LCL_WO<-exp(b+qnorm(p=sig.level/2, lower.tail=T)*SE_logWO)
 
     df_WO<-data.frame(logWO, SE_logWO, Var_logWO, Chi_Square, p_value, WO,
                       LCL_WO, UCL_WO)
