@@ -21,6 +21,7 @@ An R package that performs randomization-based adjustment of the win ratio and w
 * `strata`: a string indicating the name of the variable used for stratification. If not specified, defaults to NULL and no stratification is utilized.
 * `arm`: a string indicating the name of the variable for treatment arm. Treatment arm must be a positive integer such that the test treatment arm is ALWAYS higher in value than the control arm.
 * `method`: a string "small" or "large" used to denote the method employed. The small sample size method is recommended unless within-stratum sample size is reasonably large (e.g., >= 50), number of visits is small (e.g., <=6), and number of covariates is small (e.g., <=4). Defaults to "small."
+* `sig.level`: significance level (Type I error probability). Defaults to 0.05.
  
 **Outputs:** A  dataframe containing
 * `logWR`: natural log-transformed win ratio
