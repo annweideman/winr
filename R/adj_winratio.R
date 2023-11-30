@@ -1,6 +1,6 @@
 #' Adjusted win ratio
 #'
-#' Randomization-based adjustment of the win ratio for covariates (covars) and
+#' Randomization-based adjustment of the win ratio for covariates and
 #' strata.
 #'
 #' @param data a dataframe or matrix containing the analysis data. Must be in
@@ -40,13 +40,13 @@
 #' number of covariates is small (e.g., <=4). Defaults to "small."
 #'
 #' @return
-#' An  dataframe containing: logWR (natural log-transformed win ratio),
-#' SE_logWR (standard error of log-transformed win ratio), Var_logWR (sample
-#' variance of log-transformed win ratio), Chi_Square (Pearson's Chi-squared
-#' test statistic corresponding to logWR), p_value (the p-value corresponding
-#' to the Pearson's Chi-squared test), WR (win ratio), LCL_WR (lower bound of
-#' $(1-\alpha)\times 100\% CI for WR), UCL_WR (upper bound of $(1-\alpha)
-#' \times 100\% CI for WR).
+#' A  dataframe containing: \code{logWR} (natural log-transformed win ratio),
+#' \code{SE_logWR} (standard error of log-transformed win ratio),
+#' \code{Var_logWR} (sample variance of log-transformed win ratio),
+#' \code{Chi_Square} (Pearson's Chi-squared test statistic corresponding to
+#' logWR), \code{p_value} (the p-value corresponding to the Pearson's Chi-squared test
+#' \code{WR} win ratio), \code{LCL_WR} (lower bound of \eqn{(1-\alpha)\times 100\%} CI for WR),
+#' \code{UCL_WR} (upper bound of \eqn{(1-\alpha)\times 100\%} CI for WR)
 #'
 #' @examples
 #'
@@ -108,6 +108,10 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     stop("pid must be of type \"character\"")
   }
 
+  if (length(pid)>1){
+    stop("pid must be of length one")
+  }
+
   if (!is.null(baseline)){
     if(!(baseline %in% colnames(data))){
         stop("data must contain column \"baseline\" since it is specified")
@@ -118,6 +122,10 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     if (!is.character(baseline)){
       stop("baseline must be of type \"character\" since it is specified")
     }
+  }
+
+  if (length(baseline)>1){
+    stop("baseline must be of length one")
   }
 
   if (!all(outcome %in% colnames(data))){
@@ -146,6 +154,10 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     }
   }
 
+  if (length(strata)>1){
+    stop("strata must be of length one")
+  }
+
   if (!(arm %in% colnames(data))){
     stop("data must contain column \"arm\"")
   }
@@ -154,8 +166,16 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     stop("arm must only contain integer values")
   }
 
+  if (length(arm)>1){
+    stop("arm must be of length one")
+  }
+
   if (!(method %in% c("small","large"))){
     stop("method must be either \"small\" or \"large\"")
+  }
+
+  if (length(method)>1){
+    stop("method must be of length one")
   }
 
   outcome<-c(baseline, outcome)
