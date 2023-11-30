@@ -28,8 +28,8 @@ An R package that performs randomization-based adjustment of the win ratio and w
 * `Var_logWR`: sample variance of log-transformed win ratio
 * `Chi_Square`: Pearson's Chi-squared test statistic corresponding to `logWR`
 * `p_value`: p-value corresponding to the Pearson's Chi-squared test `WR`
-* `LCL_WR`: lower bound of $(1-\alpha)\times 100\%$ CI for `WR`
-* `UCL_WR`: upper bound of $(1-\alpha)\times 100\%$ CI for `WR`
+* `LCL_WR`: lower bound of $(1-\alpha)\times 100%$ CI for `WR`
+* `UCL_WR`: upper bound of $(1-\alpha)\times 100%$ CI for `WR`
 
 # Installation
 Install the current release from CRAN (not recommended). Not published on CRAN as of 11/30/23:
