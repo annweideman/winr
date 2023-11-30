@@ -8,12 +8,21 @@ Author:
            role = c("aut", "cre"),
            email = "anndo1@umbc.edu",
            comment = c(ORCID = "0000-0002-1653-9102"))
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+    person(given = "Elaine",
+           family = "Kowalewski",
+           role = c("aut"),
+           email = "elainekkowalewski@gmail.com",
+           comment = c(ORCID = "0000-0002-7915-877X"))
+    person(given = "Gary",
+           family = "Koch",
+           role = c("aut"),
+           email = "BCL@bios.unc.edu")
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.3
+Imports: tibble, Rdpack
+RdMacros: Rdpack
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
