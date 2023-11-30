@@ -27,7 +27,8 @@ An R package that performs randomization-based adjustment of the win ratio and w
 * `SE_logWR`: standard error of log-transformed win ratio
 * `Var_logWR`: sample variance of log-transformed win ratio
 * `Chi_Square`: Pearson's Chi-squared test statistic corresponding to `logWR`
-* `p_value`: p-value corresponding to the Pearson's Chi-squared test `WR`
+* `p_value`: p-value corresponding to the Pearson's Chi-squared test
+* `WR`: win ratio
 * `LCL_WR`: lower bound of $(1-\alpha)\times 100$% CI for `WR`
 * `UCL_WR`: upper bound of $(1-\alpha)\times 100$% CI for `WR`
 
