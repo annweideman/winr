@@ -263,7 +263,7 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     }
 
     # Function for U_h where h is the stratum
-    Uh_fun<-function(dataTx, dataCx, dataT, dataC){
+    Uh_fun1<-function(dataTx, dataCx, dataT, dataC){
 
       #Uxi.
       Uxi.<-sweep(dataTx, 2, colMeans(dataCx), FUN="-")
@@ -326,7 +326,7 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     }
 
     # Function for V_h where h is the stratum
-    Vh_fun<-function(dataTx, dataCx, dataT, dataC){
+    Vh_fun1<-function(dataTx, dataCx, dataT, dataC){
 
       nT<-nrow(unique(dataT[pid]))
       nC<-nrow(unique(dataC[pid]))
@@ -463,11 +463,11 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     if(length(strata)>0){
 
       Uh_list<-lapply(1:n_strata, function(h)
-        w[h]*matrix(Uh_fun(dataTx_split[[h]], dataCx_split[[h]],
+        w[h]*matrix(Uh_fun1(dataTx_split[[h]], dataCx_split[[h]],
                            dataT_split[[h]], dataC_split[[h]])))
 
       Vh_list<-lapply(1:n_strata, function(h)
-        w[h]^2*Vh_fun(dataTx_split[[h]], dataCx_split[[h]],
+        w[h]^2*Vh_fun1(dataTx_split[[h]], dataCx_split[[h]],
                       dataT_split[[h]], dataC_split[[h]]))
 
       U<-  Reduce("+", Uh_list)
@@ -475,9 +475,9 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
     }else{
 
-      U<- matrix(Uh_fun(dataTx, dataCx, dataT, dataC))
+      U<- matrix(Uh_fun1(dataTx, dataCx, dataT, dataC))
 
-      V<-Vh_fun(dataTx, dataCx, dataT, dataC)
+      V<-Vh_fun1(dataTx, dataCx, dataT, dataC)
 
     }
 
@@ -545,7 +545,7 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
 
     # Function for U_h where h is the stratum
-    Uh_fun<-function(dataT, dataC){
+    Uh_fun2<-function(dataT, dataC){
 
       #U1i..
       l1<-lapply(outcome,
@@ -600,7 +600,7 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     }
 
     # Function for V_h where h is the stratum
-    Vh_fun<-function(dataT, dataC){
+    Vh_fun2<-function(dataT, dataC){
 
       nT<-nrow(unique(dataT[pid]))
       nC<-nrow(unique(dataC[pid]))
@@ -722,19 +722,19 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     if(length(strata)>0){
 
       Uh_list<-lapply(1:n_strata, function(h)
-        w[h]*matrix(Uh_fun(dataT_split[[h]], dataC_split[[h]])))
+        w[h]*matrix(Uh_fun2(dataT_split[[h]], dataC_split[[h]])))
 
       Vh_list<-lapply(1:n_strata, function(h)
-        w[h]^2*Vh_fun(dataT_split[[h]], dataC_split[[h]]))
+        w[h]^2*Vh_fun2(dataT_split[[h]], dataC_split[[h]]))
 
       U<-  Reduce("+", Uh_list)
       V<-  Reduce("+", Vh_list)
 
     }else{
 
-      U<- matrix(Uh_fun(dataT, dataC))
+      U<- matrix(Uh_fun2(dataT, dataC))
 
-      V<-Vh_fun(dataT, dataC)
+      V<-Vh_fun2(dataT, dataC)
 
     }
 
