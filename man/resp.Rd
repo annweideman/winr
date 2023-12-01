@@ -5,46 +5,47 @@
 \alias{resp}
 \title{Respiratory dataset}
 \format{
-A data frame with 10 variables:
+A data frame with 10 variables.
 
-\code{ID}  Participant ID
+\code{ID}:  Participant ID
 
-\code{Center}  Treatment center
+\code{Center}:  Treatment center
 
-\code{Sex}  Participant sex at birth
+\code{Sex}:  Participant sex at birth
 
-\code{Age}  Participant age at baseline
+\code{Age}:  Participant age at baseline
 
-\code{Treatment}  T=treatment arm, C=control arm
+\code{Treatment}:  T=treatment arm, C=control arm
 
-\code{Baseline}  Ordinal global rating at Baseline: 0 for terrible, 1 for poor, 2 for fair
+\code{Baseline}:  Ordinal global rating at Baseline: 0 for terrible, 1 for poor, 2 for fair
 3 for good, and 4 for excellent
 
-\code{Visit1}  Ordinal global rating at Visit 1: 0 for terrible, 1 for poor, 2 for fair
+\code{Visit1}:  Ordinal global rating at Visit 1: 0 for terrible, 1 for poor, 2 for fair
 3 for good, and 4 for excellent
 
-\code{Visit2}  Ordinal global rating at Visit 2: 0 for terrible, 1 for poor, 2 for fair,
+\code{Visit2}:  Ordinal global rating at Visit 2: 0 for terrible, 1 for poor, 2 for fair,
 3 for good, and 4 for excellent
 
-\code{Visit3}  Ordinal global rating at Visit 3: 0 for terrible, 1 for poor, 2 for fair,
+\code{Visit3}:  Ordinal global rating at Visit 3: 0 for terrible, 1 for poor, 2 for fair,
 3 for good, and 4 for excellent
 
-\code{Visit4}  Ordinal global rating at Visit 4: 0 for terrible, 1 for poor, 2 for fair,
+\code{Visit4}:  Ordinal global rating at Visit 4: 0 for terrible, 1 for poor, 2 for fair,
 3 for good, and 4 for excellent
 }
 \usage{
 resp
 }
 \description{
-The respiratory dataset is from a randomized clinical trial comparing a
+"The respiratory dataset is from a randomized clinical trial comparing a
 test treatment to control in the treatment of a chronic respiratory disorder
-\insertCite{koch_1989, stokes_2012}{winr}. In this trial, 111 patients
+\insertCite{koch_1989,stokes_2012}{winr}. In this trial, 111 patients
 (54 active, 57 placebo) at two centers were evaluated at baseline and four
 follow-up visits, and their respiratory status was assessed at every visit
 using an ordinal global rating (0 for terrible, 1 for poor, 2 for fair,
 3 for good, and 4 for excellent). The two centers correspond to a
 stratification factor; and baseline covariables for patients enrolled in the
-respiratory study are age, sex, and baseline respiratory status.
+respiratory study are age, sex, and baseline respiratory status"
+\insertCite{kowalewski_2023}{winr}.
 }
 \references{
 {

@@ -61,8 +61,6 @@
 #' # Respiratory example
 #' #--------------------------
 #'
-#' resp<-load(resp)
-#'
 #' # Since IDs repeat at centers 1 and 2, create a new, unique ID
 #' resp$new_ID<-resp$Center*100+resp$ID
 #'
@@ -70,10 +68,7 @@
 #' resp$Treatment<-1*(resp$Treatment=="T")
 #'
 #' # Indicator for male
-#' data_resp$Sex<-1*(data_resp$Sex=="M")
-#'
-#' # Interaction between center and sex
-#' data_resp$Center_Sex<-(data_resp$Center+1)*(data_resp$Sex+1)
+#' resp$Sex<-1*(resp$Sex=="M")
 #'
 #' adj_winodds(data=resp,
 #'             pid="new_ID",
@@ -88,8 +83,6 @@
 #' #----------------------
 #' # Skin example
 #' #----------------------
-#'
-#' skin<-load(skin)
 #'
 #' # Add column for patient IDs
 #' skin$ID<-1:nrow(skin)
@@ -117,22 +110,16 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     stop("data must be of class \"data.frame\" or \"matrix\"")
   }
 
-  if (!(pid %in% colnames(data))){
-    stop("data must contain column \"pid\"")
+  if (length(pid)>1){
+    stop("pid must be of length one")
   }
 
   if (!is.character(pid)){
     stop("pid must be of type \"character\"")
   }
 
-  if (length(pid)>1){
-    stop("pid must be of length one")
-  }
-
-  if (!is.null(baseline)){
-    if(!(baseline %in% colnames(data))){
-      stop("data must contain column \"baseline\" since it is specified")
-    }
+  if (!(pid %in% colnames(data))){
+    stop("data must contain column \"pid\"")
   }
 
   if (!is.null(baseline)){
@@ -141,16 +128,28 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     }
   }
 
+  if (!is.null(baseline)){
+    if(!(baseline %in% colnames(data))){
+      stop("data must contain column \"baseline\" since it is specified")
+    }
+  }
+
   if (length(baseline)>1){
     stop("baseline must be of length one")
+  }
+
+  if (!is.character(outcome)){
+    stop("outcome must be of type \"character\"")
   }
 
   if (!all(outcome %in% colnames(data))){
     stop("data must contain variable names in \"outcome\" since it is specified")
   }
 
-  if (!is.character(outcome)){
-    stop("outcome must be of type \"character\"")
+  if (!is.null(covars)){
+    if (!is.character(covars)){
+      stop("covars must be of type \"character\" since it is specified")
+    }
   }
 
   if (!is.null(covars)){
@@ -159,9 +158,9 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     }
   }
 
-  if (!is.null(covars)){
-    if (!is.character(covars)){
-      stop("covars must be of type \"character\" since it is specified")
+  if (!is.null(strata)){
+    if (!is.character(strata)){
+      stop("strata must be of type \"character\" since it is specified")
     }
   }
 
@@ -179,7 +178,7 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     stop("data must contain column \"arm\"")
   }
 
-  if (any_of((data[,eval(arm)]-floor(data[,eval(arm)]))!=0)){
+  if (any((data[,eval(arm)]-floor(data[,eval(arm)]))!=0)){
     stop("arm must only contain integer values")
   }
 
