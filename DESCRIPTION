@@ -1,7 +1,7 @@
 Package: winr
 Type: Package
 Title: Randomization Based Methods for Covariance and Stratified Adjustment of Win Ratios and Win Odds for Ordinal Outcomes
-Version: 0.1.0
+Version: 0.1.0.9000
 Authors@R: 
     c(person(given = "Ann Marie",
            family = "Weideman",
