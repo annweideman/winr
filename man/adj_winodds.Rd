@@ -79,29 +79,44 @@ strata.
 #--------------------------
 
 # Since IDs repeat at centers 1 and 2, create a new, unique ID
-resp$new_ID<-resp$Center*100+resp$ID
+resp$UniqID<-resp$Center*100+resp$ID
 
 # Convert treatment arm to binary
-resp$Treatment<-1*(resp$Treatment=="T")
+resp$Trt<-1*(resp$Treatment=="T")
 
 # Indicator for male
-resp$Sex<-1*(resp$Sex=="M")
+resp$SexNum<-1*(resp$Sex=="M")
 
 adj_winodds(data=resp,
-            pid="new_ID",
+            pid="UniqID",
             baseline="Baseline",
             outcome=c("Visit1","Visit2","Visit3","Visit4"),
-            covars= c("Sex","Age"),
+            covars= c("SexNum","Age"),
             strata="Center",
-            arm="Treatment",
+            arm="Trt",
             method="small",
             sig.level=0.05)
 
 #----------------------
-# Skin example
+# Dermatology example
 #----------------------
 
-# Add column for patient IDs
+#Generate indicators for stage 4 and 5
+skin$Stage4 = (skin$STAGE == 4)*1
+skin$Stage5 = (skin$STAGE == 5)*1
+
+# Generate treatment center
+skin$center<-ifelse(skin$INV==5,1,
+  ifelse(skin$INV==6,2,
+    ifelse(skin$INV==8,3,
+      ifelse(skin$INV==9,4,
+        ifelse(skin$INV==10,5,6)))))
+
+# Generate treatment center that pools centers 3 and 4 due to small sample size
+skin$center2 = skin$center
+skin$center2<-ifelse(skin$center == 4, 3, skin$center)
+
+# Generate participant IDs
 skin$ID<-1:nrow(skin)
 
 # Remove missing rows

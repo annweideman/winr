@@ -62,29 +62,44 @@
 #' #--------------------------
 #'
 #' # Since IDs repeat at centers 1 and 2, create a new, unique ID
-#' resp$new_ID<-resp$Center*100+resp$ID
+#' resp$UniqID<-resp$Center*100+resp$ID
 #'
 #' # Convert treatment arm to binary
-#' resp$Treatment<-1*(resp$Treatment=="T")
+#' resp$Trt<-1*(resp$Treatment=="T")
 #'
 #' # Indicator for male
-#' resp$Sex<-1*(resp$Sex=="M")
+#' resp$SexNum<-1*(resp$Sex=="M")
 #'
 #' adj_winodds(data=resp,
-#'             pid="new_ID",
+#'             pid="UniqID",
 #'             baseline="Baseline",
 #'             outcome=c("Visit1","Visit2","Visit3","Visit4"),
-#'             covars= c("Sex","Age"),
+#'             covars= c("SexNum","Age"),
 #'             strata="Center",
-#'             arm="Treatment",
+#'             arm="Trt",
 #'             method="small",
 #'             sig.level=0.05)
 #'
 #' #----------------------
-#' # Skin example
+#' # Dermatology example
 #' #----------------------
 #'
-#' # Add column for patient IDs
+#' #Generate indicators for stage 4 and 5
+#' skin$Stage4 = (skin$STAGE == 4)*1
+#' skin$Stage5 = (skin$STAGE == 5)*1
+#'
+#' # Generate treatment center
+#' skin$center<-ifelse(skin$INV==5,1,
+#'   ifelse(skin$INV==6,2,
+#'     ifelse(skin$INV==8,3,
+#'       ifelse(skin$INV==9,4,
+#'         ifelse(skin$INV==10,5,6)))))
+#'
+#' # Generate treatment center that pools centers 3 and 4 due to small sample size
+#' skin$center2 = skin$center
+#' skin$center2<-ifelse(skin$center == 4, 3, skin$center)
+#'
+#' # Generate participant IDs
 #' skin$ID<-1:nrow(skin)
 #'
 #' # Remove missing rows
@@ -201,11 +216,12 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
   outcome<-c(baseline, outcome)
 
   # Convert data from wide format to long format
-  data_long<-tidyr::gather(data, visit, outcome, outcome, factor_key=TRUE)
+  data_long<-tidyr::gather(data=data, key="visit", outcome, outcome,
+                           factor_key=TRUE)
 
   # Order by ID
-  data<-data[order(data[,pid]),]
-  data_long<-data_long[order(data_long[,pid]),]
+  data <- dplyr::arrange(data, pid)
+  data_long<-dplyr::arrange(data_long,pid)
 
   if(length(covars)>0){
 
@@ -491,7 +507,7 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     Var_logWO<-diag(Vb)
     SE_logWO<-sqrt(diag(Vb))
     Chi_Square<-(b/sqrt(diag(Vb)))^2
-    p_value<-pchisq(Chi_Square, 1, lower.tail = FALSE)
+    p_value<-stats::pchisq(Chi_Square, 1, lower.tail = FALSE)
     WO<-exp(b)
     UCL_WO<-exp(b+1.96*SE_logWO)
     LCL_WO<-exp(b-1.96*SE_logWO)
@@ -748,10 +764,10 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     Var_logWO<-diag(Vb)
     SE_logWO<-sqrt(diag(Vb))
     Chi_Square<-(b/sqrt(diag(Vb)))^2
-    p_value<-pchisq(Chi_Square, 1, lower.tail = FALSE)
+    p_value<-stats::pchisq(Chi_Square, 1, lower.tail = FALSE)
     WO<-exp(b)
-    UCL_WO<-exp(b+qnorm(p=sig.level/2, lower.tail=F)*SE_logWO)
-    LCL_WO<-exp(b+qnorm(p=sig.level/2, lower.tail=T)*SE_logWO)
+    UCL_WO<-exp(b+stats::qnorm(p=sig.level/2, lower.tail=F)*SE_logWO)
+    LCL_WO<-exp(b+stats::qnorm(p=sig.level/2, lower.tail=T)*SE_logWO)
 
     df_WO<-data.frame(logWO, SE_logWO, Var_logWO, Chi_Square, p_value, WO,
                       LCL_WO, UCL_WO)

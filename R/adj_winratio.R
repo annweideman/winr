@@ -61,43 +61,58 @@
 #' #--------------------------
 #'
 #' # Since IDs repeat at centers 1 and 2, create a new, unique ID
-#' resp$new_ID<-resp$Center*100+resp$ID
+#' resp$UniqID<-resp$Center*100+resp$ID
 #'
 #' # Convert treatment arm to binary
-#' resp$Treatment<-1*(resp$Treatment=="T")
+#' resp$Trt<-1*(resp$Treatment=="T")
 #'
 #' # Indicator for male
-#' resp$Sex<-1*(resp$Sex=="M")
+#' resp$SexNum<-1*(resp$Sex=="M")
 #'
 #' adj_winratio(data=resp,
-#'              pid="new_ID",
-#'              baseline="Baseline",
-#'              outcome=c("Visit1","Visit2","Visit3","Visit4"),
-#'              covars= c("Sex","Age"),
-#'              strata="Center",
-#'              arm="Treatment",
-#'              method="small",
-#'              sig.level=0.05)
+#'             pid="UniqID",
+#'             baseline="Baseline",
+#'             outcome=c("Visit1","Visit2","Visit3","Visit4"),
+#'             covars= c("SexNum","Age"),
+#'             strata="Center",
+#'             arm="Trt",
+#'             method="small",
+#'             sig.level=0.05)
 #'
 #' #----------------------
-#' # Skin example
+#' # Dermatology example
 #' #----------------------
 #'
-#' # Add column for patient IDs
+#' #Generate indicators for stage 4 and 5
+#' skin$Stage4 = (skin$STAGE == 4)*1
+#' skin$Stage5 = (skin$STAGE == 5)*1
+#'
+#' # Generate treatment center
+#' skin$center<-ifelse(skin$INV==5,1,
+#'   ifelse(skin$INV==6,2,
+#'     ifelse(skin$INV==8,3,
+#'       ifelse(skin$INV==9,4,
+#'         ifelse(skin$INV==10,5,6)))))
+#'
+#' # Generate treatment center that pools centers 3 and 4 due to small sample size
+#' skin$center2 = skin$center
+#' skin$center2<-ifelse(skin$center == 4, 3, skin$center)
+#'
+#' # Generate participant IDs
 #' skin$ID<-1:nrow(skin)
 #'
 #' # Remove missing rows
 #' skin<-skin[complete.cases(skin), ]
 #'
 #' adj_winratio(data=skin,
-#'              pid="ID",
-#'              baseline=NULL,
-#'              outcome=c("R1","R2","R3"),
-#'              covars= c("Stage4","Stage5"),
-#'              strata="center2",
-#'              arm="TRT",
-#'              method="small",
-#'              sig.level=0.05)
+#'             pid="ID",
+#'             baseline=NULL,
+#'             outcome=c("R1","R2","R3"),
+#'             covars= c("Stage4","Stage5"),
+#'             strata="center2",
+#'             arm="TRT",
+#'             method="small",
+#'             sig.level=0.05)
 #'
 #' @export
 
@@ -200,11 +215,12 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
   outcome<-c(baseline, outcome)
 
   # Convert data from wide format to long format
-  data_long<-tidyr::gather(data, visit, outcome, outcome, factor_key=TRUE)
+  data_long<-tidyr::gather(data=data, key="visit", outcome, outcome,
+                           factor_key=TRUE)
 
   # Order by ID
-  data<-data[order(data[,pid]),]
-  data_long<-data_long[order(data_long[,pid]),]
+  data <- dplyr::arrange(data, pid)
+  data_long<-dplyr::arrange(data_long,pid)
 
   if(length(covars)>0){
 
@@ -469,7 +485,7 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     Var_logWR<-diag(Vb)
     SE_logWR<-sqrt(diag(Vb))
     Chi_Square<-(b/sqrt(diag(Vb)))^2
-    p_value<-pchisq(Chi_Square, 1, lower.tail = FALSE)
+    p_value<-stats::pchisq(Chi_Square, 1, lower.tail = FALSE)
     WR<-exp(b)
     UCL_WR<-exp(b+1.96*SE_logWR)
     LCL_WR<-exp(b-1.96*SE_logWR)
@@ -703,10 +719,10 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     Var_logWR<-diag(Vb)
     SE_logWR<-sqrt(diag(Vb))
     Chi_Square<-(b/sqrt(diag(Vb)))^2
-    p_value<-pchisq(Chi_Square, 1, lower.tail = FALSE)
+    p_value<-stats::pchisq(Chi_Square, 1, lower.tail = FALSE)
     WR<-exp(b)
-    UCL_WR<-exp(b+qnorm(p=sig.level/2, lower.tail=F)*SE_logWR)
-    LCL_WR<-exp(b+qnorm(p=sig.level/2, lower.tail=T)*SE_logWR)
+    UCL_WR<-exp(b+stats::qnorm(p=sig.level/2, lower.tail=F)*SE_logWR)
+    LCL_WR<-exp(b+stats::qnorm(p=sig.level/2, lower.tail=T)*SE_logWR)
 
     df_WR<-data.frame(logWR, SE_logWR, Var_logWR, Chi_Square, p_value, WR,
                       LCL_WR, UCL_WR)
