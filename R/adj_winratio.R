@@ -582,7 +582,8 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
                       LCL_WR, UCL_WR)
     rownames(df_WR)<-if(length(baseline)==0){outcome}else{outcome[-1]}
 
-    return(df_WR)}
+    return(df_WR)
+  }
 
   if(length(covars)==0){
 

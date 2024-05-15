@@ -801,6 +801,7 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
         #VF
         VF<-Zeros%*%V%*%t(Zeros)
+
       }else{
         VF<-lapply(1:length(w), function(x){
           #D
