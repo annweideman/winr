@@ -425,6 +425,14 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
     }
 
+    # Function to check if the matrix is invertible (full rank)
+    is_invertible <- function(matrix) {
+      qr_decomp <- qr(matrix)
+      rank_matrix <- qr_decomp$rank
+      full_rank <- ncol(matrix) == rank_matrix
+      return(full_rank)
+    }
+
     VF_fun<-function(U, V, w){
 
       #A
@@ -434,6 +442,11 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
         #D
         D<-diag(U[-(1:s)])
+
+        if (!is_invertible(D)) {
+          stop("METHOD=SMALL must be utilized because there is perfect collinearity
+             between covariates within one or more strata.")
+        }
 
         #Matrix of zeros
         Zeros<-matrix(0,nrow=(s+rplusbase),ncol=s+2*(rplusbase))
@@ -449,6 +462,11 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
         VF<-lapply(1:length(w), function(y){
           #D
           D<-diag(U[[y]][-(1:s)])
+
+          if (!is_invertible(D)) {
+            stop("METHOD=SMALL must be utilized because there is perfect collinearity
+             between covariates within one or more strata.")
+          }
 
           #Matrix of zeros
           Zeros<-matrix(0,nrow=(s+rplusbase),ncol=s+2*(rplusbase))
@@ -473,9 +491,21 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
       #b
       if(method=="small"){
+
+        if (!is_invertible(VF)) {
+          stop("METHOD=SMALL must be utilized because there is perfect collinearity
+             between covariates within one or more strata.")
+        }
+
         b<-solve(t(L)%*%solve(VF)%*%L)%*%t(L)%*%solve(VF)%*%F
       }else{
-        bh_list<-lapply(1:length(w), function(x) w[x]*solve(t(L)%*%solve(VF[[x]])%*%L)%*%t(L)%*%solve(VF[[x]])%*%F[[x]])
+        bh_list<-lapply(1:length(w), function(x) {
+          if (!is_invertible(VF[[x]])) {
+            stop("METHOD=SMALL must be utilized because there is perfect collinearity
+             between covariates within one or more strata.")
+          }
+          w[x]*solve(t(L)%*%solve(VF[[x]])%*%L)%*%t(L)%*%solve(VF[[x]])%*%F[[x]]
+          })
         b<-Reduce("+", bh_list)
       }
 
@@ -517,7 +547,7 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
       Uh_list<-lapply(1:n_strata, function(h)
         matrix(Uh_fun1(dataTx_split[[h]], dataCx_split[[h]],
-                            dataT_split[[h]], dataC_split[[h]])))
+                      dataT_split[[h]], dataC_split[[h]])))
 
       Vh_list<-lapply(1:n_strata, function(h)
         Vh_fun1(dataTx_split[[h]], dataCx_split[[h]],
