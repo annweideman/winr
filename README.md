@@ -40,7 +40,7 @@ Install the current release from CRAN (not recommended). Not published on CRAN a
 install.packages("winr")
 ```
 
-Install the devel version from GitHub (HIGHLY recommended, as this will allow you to install any bugs that were corrected post-publication to CRAN)
+Install the developmental version from GitHub (HIGHLY recommended, as this will allow you to install any bugs that were corrected post-publication to CRAN)
 
 ```
 if (!require("devtools", character.only = TRUE)) {
