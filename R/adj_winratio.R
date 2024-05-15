@@ -212,6 +212,10 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     stop("sig.level must be of class numeric")
   }
 
+  if (sig.level<0 | sig.level>1){
+    stop("sig.level must be between 0 and 1")
+  }
+
   outcome<-c(baseline, outcome)
 
   # Convert data from wide format to long format
@@ -393,68 +397,110 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
     }
 
-    F_fun<-function(U){
-
-      #indices
-      x_ind<-1:s
-      U_ind<-(s+1):length(U)
+    F_fun<-function(U, w){
 
       #A
       A=cbind(diag(rplusbase),-diag(rplusbase))
 
-      #F
-      F<-c(U[x_ind],A%*%matrix(log(U[U_ind])))
+      if(method=="small"){
+
+        #indices
+        x_ind<-1:s
+        U_ind<-(s+1):length(U)
+
+        #F
+        F<-c(U[x_ind],A%*%matrix(log(U[U_ind])))
+
+      }else{
+
+        #indices
+        x_ind<-1:s
+        U_ind<-(s+1):length(U[[1]])
+
+        #F
+        F<-lapply(1:length(w), function(y) c(U[[y]][x_ind], A%*%matrix(log(U[[y]][U_ind]))))
+      }
 
       return(F)
 
     }
 
-    VF_fun<-function(U, V){
+    VF_fun<-function(U, V, w){
 
       #A
       A<-cbind(diag(rplusbase),-diag(rplusbase))
 
-      #D
-      D<-diag(U[-(1:s)])
+      if(method=="small"){
 
-      #Matrix of zeros
-      Zeros<-matrix(0,nrow=(s+rplusbase),ncol=s+2*(rplusbase))
+        #D
+        D<-diag(U[-(1:s)])
 
-      #M1
-      Zeros[1:s,1:s]<-diag(s)
-      Zeros[(s+1):nrow(Zeros),(s+1):ncol(Zeros)]<-A%*%solve(D)
+        #Matrix of zeros
+        Zeros<-matrix(0,nrow=(s+rplusbase),ncol=s+2*(rplusbase))
 
-      #VF
-      VF<-Zeros%*%V%*%t(Zeros)
+        #M1
+        Zeros[1:s,1:s]<-diag(s)
+        Zeros[(s+1):nrow(Zeros),(s+1):ncol(Zeros)]<-A%*%solve(D)
+
+        #VF
+        VF<-Zeros%*%V%*%t(Zeros)
+
+      }else{
+        VF<-lapply(1:length(w), function(y){
+          #D
+          D<-diag(U[[y]][-(1:s)])
+
+          #Matrix of zeros
+          Zeros<-matrix(0,nrow=(s+rplusbase),ncol=s+2*(rplusbase))
+
+          #M1
+          Zeros[1:s,1:s]<-diag(s)
+          Zeros[(s+1):nrow(Zeros),(s+1):ncol(Zeros)]<-A%*%solve(D)
+
+          #VF
+          VF<-Zeros%*%V[[y]]%*%t(Zeros)
+        })
+      }
 
       return(VF)
+
     }
 
-    b_fun<-function(VF,F){
+    b_fun<-function(VF,F,w){
 
       #L
       L<-rbind(matrix(0,nrow=splusbase,ncol=r),diag(r))
 
       #b
-      b<-solve(t(L)%*%solve(VF)%*%L)%*%t(L)%*%solve(VF)%*%F
+      if(method=="small"){
+        b<-solve(t(L)%*%solve(VF)%*%L)%*%t(L)%*%solve(VF)%*%F
+      }else{
+        bh_list<-lapply(1:length(w), function(x) w[x]*solve(t(L)%*%solve(VF[[x]])%*%L)%*%t(L)%*%solve(VF[[x]])%*%F[[x]])
+        b<-Reduce("+", bh_list)
+      }
 
       return(b)
 
     }
 
-    Vb_fun<-function(VF){
+    Vb_fun<-function(VF,w){
 
       #L
       L<-rbind(matrix(0,nrow=splusbase,ncol=r),diag(r))
 
       #VF
-      VF<-solve(t(L)%*%solve(VF)%*%L)
+      if(method=="small"){
+        VF<-solve(t(L)%*%solve(VF)%*%L)
+      }else{
+        VFh_list<-lapply(1:length(w), function(x) w[x]^2*solve(t(L)%*%solve(VF[[x]])%*%L))
+        VF<-Reduce("+", VFh_list)
+      }
 
       return(VF)
 
     }
 
-    if(length(strata)>0){
+    if(length(strata)>0 & method=="small"){
 
       Uh_list<-lapply(1:n_strata, function(h)
                w[h]*matrix(Uh_fun1(dataTx_split[[h]], dataCx_split[[h]],
@@ -467,6 +513,18 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
       U<-  Reduce("+", Uh_list)
       V<-  Reduce("+", Vh_list)
 
+    }else if (length(strata)>0 & method=="large"){
+
+      Uh_list<-lapply(1:n_strata, function(h)
+        matrix(Uh_fun1(dataTx_split[[h]], dataCx_split[[h]],
+                            dataT_split[[h]], dataC_split[[h]])))
+
+      Vh_list<-lapply(1:n_strata, function(h)
+        Vh_fun1(dataTx_split[[h]], dataCx_split[[h]],
+                       dataT_split[[h]], dataC_split[[h]]))
+
+      U<-  Uh_list
+      V<-  Vh_list
     }else{
 
       U<- matrix(Uh_fun1(dataTx, dataCx, dataT, dataC))
@@ -475,10 +533,10 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
     }
 
-    F<-F_fun(U)
-    VF<-VF_fun(U,V)
-    b<-b_fun(VF,F)
-    Vb<-Vb_fun(VF)
+    F<-F_fun(U,w)
+    VF<-VF_fun(U,V,w)
+    b<-b_fun(VF,F,w)
+    Vb<-Vb_fun(VF,w)
 
     #generate output dataframe
     logWR<-b
@@ -487,8 +545,8 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     Chi_Square<-(b/sqrt(diag(Vb)))^2
     p_value<-stats::pchisq(Chi_Square, 1, lower.tail = FALSE)
     WR<-exp(b)
-    UCL_WR<-exp(b+1.96*SE_logWR)
-    LCL_WR<-exp(b-1.96*SE_logWR)
+    UCL_WR<-exp(b+stats::qnorm(1-sig.level/2)*SE_logWR)
+    LCL_WR<-exp(b-stats::qnorm(1-sig.level/2)*SE_logWR)
 
     df_WR<-data.frame(logWR, SE_logWR, Var_logWR, Chi_Square, p_value, WR,
                       LCL_WR, UCL_WR)
@@ -637,60 +695,87 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
     }
 
-    F_fun<-function(U){
+    F_fun<-function(U,w){
 
       #A
       A=cbind(diag(rplusbase),-diag(rplusbase))
 
-      #F
-      F<-A%*%matrix(log(U))
+      if(method=="small"){
+        #F
+        F<-A%*%matrix(log(U))
+      }else{
+        #F
+        F<-lapply(1:length(w), function(x) A%*%matrix(log(U[[x]])))
+      }
 
       return(F)
 
     }
 
-    VF_fun<-function(U, V){
+    VF_fun<-function(U, V, w){
 
       #A
       A<-cbind(diag(rplusbase),-diag(rplusbase))
 
-      #D
-      D<-diag(as.numeric(U))
+      if(method=="small"){
+        #D
+        D<-diag(as.numeric(U))
 
-      #M1
-      Zeros<-A%*%solve(D)
+        #M1
+        Zeros<-A%*%solve(D)
 
-      #VF
-      VF<-Zeros%*%V%*%t(Zeros)
+        #VF
+        VF<-Zeros%*%V%*%t(Zeros)
+      }else{
+      VF<-lapply(1:length(w), function(x){
+        #D
+        D<-diag(as.numeric(U[[x]]))
+
+        #M1
+        Zeros<-A%*%solve(D)
+
+        #VF
+        Zeros%*%V[[x]]%*%t(Zeros)
+        })
+      }
 
       return(VF)
     }
 
-    b_fun<-function(VF,F){
+    b_fun<-function(VF,F,w){
 
       #L
       L<-rbind(matrix(0,nrow=splusbase,ncol=r),diag(r))
 
       #b
-      b<-solve(t(L)%*%solve(VF)%*%L)%*%t(L)%*%solve(VF)%*%F
+      if(method=="small"){
+        b<-solve(t(L)%*%solve(VF)%*%L)%*%t(L)%*%solve(VF)%*%F
+      }else{
+        bh_list<-lapply(1:length(w), function(x) w[x]*solve(t(L)%*%solve(VF[[x]])%*%L)%*%t(L)%*%solve(VF[[x]])%*%F[[x]])
+        b<-Reduce("+", bh_list)
+      }
 
       return(b)
 
     }
 
-    Vb_fun<-function(VF){
+    Vb_fun<-function(VF,w){
 
       #L
       L<-rbind(matrix(0,nrow=splusbase,ncol=r),diag(r))
 
       #VF
-      VF<-solve(t(L)%*%solve(VF)%*%L)
-
+      if(method=="small"){
+        VF<-solve(t(L)%*%solve(VF)%*%L)
+      }else{
+        VFh_list<-lapply(1:length(w), function(x) w[x]^2*solve(t(L)%*%solve(VF[[x]])%*%L))
+        VF<-Reduce("+", VFh_list)
+      }
       return(VF)
 
     }
 
-    if(length(strata)>0){
+    if(length(strata)>0 & method=="small"){
 
       Uh_list<-lapply(1:n_strata, function(h)
         w[h]*matrix(Uh_fun2(dataT_split[[h]], dataC_split[[h]])))
@@ -701,6 +786,17 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
       U<-  Reduce("+", Uh_list)
       V<-  Reduce("+", Vh_list)
 
+    } else if (length(strata)>0 & method=="large"){
+
+      Uh_list<-lapply(1:n_strata, function(h)
+        matrix(Uh_fun2(dataT_split[[h]], dataC_split[[h]])))
+
+      Vh_list<-lapply(1:n_strata, function(h)
+        Vh_fun2(dataT_split[[h]], dataC_split[[h]]))
+
+      U<-  Uh_list
+      V<-  Vh_list
+
     }else{
 
       U<- matrix(Uh_fun2(dataT, dataC))
@@ -709,10 +805,10 @@ adj_winratio<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
     }
 
-    F<-F_fun(U)
-    VF<-VF_fun(U,V)
-    b<-b_fun(VF,F)
-    Vb<-Vb_fun(VF)
+    F<-F_fun(U,w)
+    VF<-VF_fun(U,V,w)
+    b<-b_fun(VF,F,w)
+    Vb<-Vb_fun(VF,w)
 
     #generate output dataframe
     logWR<-b
