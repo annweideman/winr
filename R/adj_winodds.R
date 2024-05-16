@@ -102,9 +102,6 @@
 #' # Generate participant IDs
 #' skin$ID<-1:nrow(skin)
 #'
-#' # Remove missing rows
-#' skin<-skin[complete.cases(skin), ]
-#'
 #' adj_winodds(data=skin,
 #'             pid="ID",
 #'             baseline=NULL,
@@ -133,6 +130,10 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     stop("pid must be of type \"character\"")
   }
 
+  if(any(duplicated(data[, eval(pid), drop = TRUE]))){
+    stop("pid must be unique for each row of the input dataset")
+  }
+
   if (!(pid %in% colnames(data))){
     stop("data must contain column \"pid\"")
   }
@@ -144,7 +145,7 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
   }
 
   if (!is.null(baseline)){
-    if(!(baseline %in% colnames(data))){
+    if(any(!(baseline %in% colnames(data)))){
       stop("data must contain column \"baseline\" since it is specified")
     }
   }
@@ -173,14 +174,18 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     }
   }
 
+  if (any(!sapply(data[covars], is.numeric))){
+    stop("covars must ony contain covariates of type \"numeric\"")
+  }
+
   if (!is.null(strata)){
     if (!is.character(strata)){
       stop("strata must be of type \"character\" since it is specified")
     }
   }
 
-  if (is.null(strata)){
-    if(!(strata %in% data)){
+  if (!is.null(strata)){
+    if(!(strata %in% colnames(data))){
       stop("data must contain column \"strata\" since it is specified")
     }
   }
@@ -193,8 +198,16 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     stop("data must contain column \"arm\"")
   }
 
+  if (!is.numeric(data[, eval(arm), drop = TRUE])){
+    stop("arm must only contain integer values")
+  }
+
   if (any((data[,eval(arm)]-floor(data[,eval(arm)]))!=0)){
     stop("arm must only contain integer values")
+  }
+
+  if (length(unique((data[, eval(arm), drop = T])))!=2){
+    stop("arm must only contain only two levels")
   }
 
   if (length(arm)>1){
@@ -277,10 +290,15 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
       n_hT<-sapply(1:n_strata, function(h) nrow(unique(dataT_split[[h]][pid])))
       n_hC<-sapply(1:n_strata, function(h) nrow(unique(dataC_split[[h]][pid])))
 
+      if((any(n_hT<50) | any(n_hC<50)) & method=="large"){
+        warning("Minimum within-stratum sample size is less 50. Consider using
+                METHOD = SMALL instead.")
+      }
+
       # Mantel-Haenszel weights by stratum
       w<-((n_hT*n_hC)/(n_hT+n_hC))/sum((n_hT*n_hC)/(n_hT+n_hC))
 
-    }
+    }else{w=1}
 
     # Function for U_h where h is the stratum
     Uh_fun1<-function(dataTx, dataCx, dataT, dataC){
@@ -350,6 +368,10 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
       nT<-nrow(unique(dataT[pid]))
       nC<-nrow(unique(dataC[pid]))
+
+      if(nT<=1 | nC<=1){
+        stop("within-stratum sample size in each arm must be greater than 1.")
+      }
 
       #Uxi.
       Uxi.<-sweep(dataTx, 2, colMeans(dataCx), FUN="-")
@@ -428,10 +450,10 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
         #indices
         x_ind<-1:s
-        U_ind<-(s+1):length(U)
+        U_ind<-(s+1):length(U[[1]])
 
         #F
-        F<-c(U[x_ind],A%*%matrix(log(U[U_ind])))
+        F<-c(U[[1]][x_ind],A%*%matrix(log(U[[1]][U_ind])))
 
       }else{
 
@@ -463,7 +485,7 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
       if(method=="small"){
 
         #D
-        D<-diag(U[-(1:s)])
+        D<-diag(U[[1]][-(1:s)])
 
         if (!is_invertible(D)) {
           stop("METHOD=SMALL must be utilized because there is perfect collinearity
@@ -478,7 +500,7 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
         Zeros[(s+1):nrow(Zeros),(s+1):ncol(Zeros)]<-A%*%solve(D)
 
         #VF
-        VF<-Zeros%*%V%*%t(Zeros)
+        VF<-Zeros%*%V[[1]]%*%t(Zeros)
 
       }else{
         VF<-lapply(1:length(w), function(y){
@@ -564,8 +586,8 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
         w[h]^2*Vh_fun1(dataTx_split[[h]], dataCx_split[[h]],
                        dataT_split[[h]], dataC_split[[h]]))
 
-      U<-  Reduce("+", Uh_list)
-      V<-  Reduce("+", Vh_list)
+      U<-  list(Reduce("+", Uh_list))
+      V<-  list(Reduce("+", Vh_list))
 
     }else if (length(strata)>0 & method=="large"){
 
@@ -581,9 +603,9 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
       V<-  Vh_list
     }else{
 
-      U<- matrix(Uh_fun1(dataTx, dataCx, dataT, dataC))
+      U<- list(matrix(Uh_fun1(dataTx, dataCx, dataT, dataC)))
 
-      V<-Vh_fun1(dataTx, dataCx, dataT, dataC)
+      V<- list(Vh_fun1(dataTx, dataCx, dataT, dataC))
 
     }
 
@@ -644,10 +666,15 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
       n_hT<-sapply(1:n_strata, function(h) nrow(unique(dataT_split[[h]][pid])))
       n_hC<-sapply(1:n_strata, function(h) nrow(unique(dataC_split[[h]][pid])))
 
+      if((any(n_hT<50) | any(n_hC<50)) & method=="large"){
+        warning("Minimum within-stratum sample size is less 50. Consider using
+                METHOD = SMALL instead.")
+      }
+
       # Mantel-Haenszel weights by stratum
       w<-((n_hT*n_hC)/(n_hT+n_hC))/sum((n_hT*n_hC)/(n_hT+n_hC))
 
-    }
+    }else{w=1}
 
 
     # Function for U_h where h is the stratum
@@ -710,6 +737,10 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
       nT<-nrow(unique(dataT[pid]))
       nC<-nrow(unique(dataC[pid]))
+
+      if(nT<=1 | nC<=1){
+        stop("within-stratum sample size in each arm must be greater than 1.")
+      }
 
       #U1i..
       l1<-lapply(outcome,
@@ -777,7 +808,7 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
       if(method=="small"){
         #F
-        F<-A%*%matrix(log(U))
+        F<-A%*%matrix(log(U[[1]]))
       }else{
         #F
         F<-lapply(1:length(w), function(x) A%*%matrix(log(U[[x]])))
@@ -787,6 +818,14 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
     }
 
+    # Function to check if the matrix is invertible (full rank)
+    is_invertible <- function(matrix) {
+      qr_decomp <- qr(matrix)
+      rank_matrix <- qr_decomp$rank
+      full_rank <- ncol(matrix) == rank_matrix
+      return(full_rank)
+    }
+
     VF_fun<-function(U, V, w){
 
       #A
@@ -794,18 +833,28 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
       if(method=="small"){
         #D
-        D<-diag(as.numeric(U))
+        D<-diag(as.numeric(U[[1]]))
+
+        if (!is_invertible(D)) {
+          stop("METHOD=SMALL must be utilized because there is perfect collinearity
+             between covariates within one or more strata.")
+        }
 
         #M1
         Zeros<-A%*%solve(D)
 
         #VF
-        VF<-Zeros%*%V%*%t(Zeros)
+        VF<-Zeros%*%V[[1]]%*%t(Zeros)
 
       }else{
         VF<-lapply(1:length(w), function(x){
           #D
           D<-diag(as.numeric(U[[x]]))
+
+          if (!is_invertible(D)) {
+            stop("METHOD=SMALL must be utilized because there is perfect collinearity
+             between covariates within one or more strata.")
+          }
 
           #M1
           Zeros<-A%*%solve(D)
@@ -859,8 +908,8 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
       Vh_list<-lapply(1:n_strata, function(h)
         w[h]^2*Vh_fun2(dataT_split[[h]], dataC_split[[h]]))
 
-      U<-  Reduce("+", Uh_list)
-      V<-  Reduce("+", Vh_list)
+      U<-  list(Reduce("+", Uh_list))
+      V<-  list(Reduce("+", Vh_list))
 
     } else if (length(strata)>0 & method=="large"){
 
@@ -875,9 +924,9 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
 
     }else{
 
-      U<- matrix(Uh_fun2(dataT, dataC))
+      U<- list(matrix(Uh_fun2(dataT, dataC)))
 
-      V<-Vh_fun2(dataT, dataC)
+      V<- list(Vh_fun2(dataT, dataC))
 
     }
 
@@ -893,8 +942,8 @@ adj_winodds<-function(data, pid, baseline=NULL, outcome, covars=NULL,
     Chi_Square<-(b/sqrt(diag(Vb)))^2
     p_value<-stats::pchisq(Chi_Square, 1, lower.tail = FALSE)
     WO<-exp(b)
-    UCL_WO<-exp(b+stats::qnorm(p=sig.level/2, lower.tail=F)*SE_logWO)
-    LCL_WO<-exp(b+stats::qnorm(p=sig.level/2, lower.tail=T)*SE_logWO)
+    UCL_WO<-exp(b+stats::qnorm(p=1-sig.level/2)*SE_logWO)
+    LCL_WO<-exp(b-stats::qnorm(p=1-sig.level/2)*SE_logWO)
 
     df_WO<-data.frame(logWO, SE_logWO, Var_logWO, Chi_Square, p_value, WO,
                       LCL_WO, UCL_WO)

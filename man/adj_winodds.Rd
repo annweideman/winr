@@ -119,9 +119,6 @@ skin$center2<-ifelse(skin$center == 4, 3, skin$center)
 # Generate participant IDs
 skin$ID<-1:nrow(skin)
 
-# Remove missing rows
-skin<-skin[complete.cases(skin), ]
-
 adj_winodds(data=skin,
             pid="ID",
             baseline=NULL,
