@@ -10,7 +10,7 @@ Ann Marie K. Weideman, Elaine K. Kowalewski, Gary G. Koch
 Ann Marie Weideman, anndo1(at)umbc.edu
 
 # Description
-An R package that performs randomization-based adjustment of the win ratio and win odds for covariates and strata.
+An R package that performs randomization-based adjustment of the win ratio and win odds for baseline covariates and strata.
 
 # References
 1) Weideman, A.M.K., Kowalewski, E.K., & Koch, G.G. (2024). Randomization-based covariance adjustment of win ratios and win odds for 	randomized multi-visit studies with ordinal outcomes. *Journal of Statistical Research*, 58(1), 33–48. https://doi.org/10.3329/jsr.v58i1.75411.
@@ -22,9 +22,9 @@ An R package that performs randomization-based adjustment of the win ratio and w
 * `baseline`: a string indicating the name of the outcome measured at baseline. If not specified, defaults to NULL, and no baseline adjustment is employed.
 * `outcome`: a vector of strings indicating the names of the outcomes measured at each visit. Baseline, if specified, will be concatenated to this vector within the code. The outcomes must have at least an ordinal measurement scale with larger values being better than smaller values. Thus, the outcome can be ordered categories or continuous measurements.
 * `covars`: a vector of strings indicating the names of the covariates (measured at baseline) used for adjustment. These covariates must be numeric and can  be measured on a binary, categorical, ordered categorical, or continuous scale. If not specified, defaults to NULL and no covariate adjustment is employed.
-* `strata`: a string indicating the name of the variable used for stratification. If not specified, defaults to NULL and no stratification is utilized.
+* `strata`: a string indicating the name of the variable used for stratification. If not specified, defaults to NULL and no stratification adjustment is utilized.
 * `arm`: a string indicating the name of the variable for treatment arm. Treatment arm must be a positive integer such that the test treatment arm is ALWAYS higher in value than the control arm.
-* `method`: a string "small" or "large" used to denote the method employed. The small sample size method is recommended unless within-stratum sample size is reasonably large (e.g., >= 50), number of visits is small (e.g., <=6), and number of covariates is small (e.g., <=4). Defaults to "small."
+* `method`: a string "small" or "large" used to denote the sample size method employed. The small sample size method is recommended unless within-stratum sample size is reasonably large (e.g., >= 50), number of visits is small (e.g., <=6), and number of covariates is small (e.g., <=4). Defaults to "small."
 * `sig.level`: significance level (Type I error probability). Defaults to 0.05.
  
 **Outputs:** A  dataframe containing
