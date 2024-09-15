@@ -33,21 +33,21 @@ A data frame with 11 variables.
 skin
 }
 \description{
-"The dermatology dataset is from a randomized clinical trial comparing a test
-treatment to control for skin conditions \insertCite{stanish_1978}{winr}. In this
-trial, 172 patients (88 test, 84 placebo) at six clinics were evaluated at
-three follow-up visits, and their extent of improvement for their skin
-condition was recorded on a five-point scale (1 for rapidly improving,
+The dermatology dataset is derived from a randomized clinical trial that
+compared a test treatment with a control for managing skin conditions
+\insertCite{stanish_1978}{winr}. This trial enrolled 172 patients—88 in the
+test group and 84 in the placebo group—across six clinics. These patients were
+assessed at three follow-up visits, where the degree of improvement in their
+skin condition was measured on a five-point scale: 1 for rapidly improving,
 2 for slowly improving, 3 for stable, 4 for slowly worsening, and 5 for
-rapidly worsening). Since clinic 9 only enrolled 4 patients, patients in
-clinics 8 and 9 are pooled. This pooling is further justified by clinics 8
-and 9 having the smallest stratum sample sizes. The baseline covariable for
-patients enrolled in the skin conditions study is disease stage recorded at
-baseline (3 = Fair, 4 = Poor, 5 = Exacerbation). Unlike the respiratory
-dataset, this dataset is subject to missing data at the follow-up visits, and
-the extent of the missing data increases at each visit, with 3 (2\%) missing
-observations at visit 1, 16 (9\%) at visit 2, and 30 (17\%) at visit 3"
-\insertCite{kowalewski_2023}{winr}.
+rapidly worsening. Due to Clinic 9 enrolling only four patients, data from
+Clinics 8 and 9 were combined, a decision supported by these clinics having
+the smallest sample sizes in their strata. The primary baseline variable
+recorded was the stage of disease at the start of the study, categorized as
+3 for fair, 4 for poor, and 5 for exacerbation. This dataset also features
+missing data at follow-up visits, progressively increasing from 2\% (3
+missing observations) at the first visit to 9\% (16 missing) at the second,
+and 17\% (30 missing) at the third visit.
 }
 \references{
 {

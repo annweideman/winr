@@ -17,10 +17,10 @@ A data frame with 10 variables.
 
 \code{Treatment}:  T=treatment arm, C=control arm
 
-\code{Baseline}:  Ordinal global rating at Baseline: 0 for terrible, 1 for poor, 2 for fair
+\code{Baseline}:  Ordinal global rating at Baseline: 0 for terrible, 1 for poor, 2 for fair,
 3 for good, and 4 for excellent
 
-\code{Visit1}:  Ordinal global rating at Visit 1: 0 for terrible, 1 for poor, 2 for fair
+\code{Visit1}:  Ordinal global rating at Visit 1: 0 for terrible, 1 for poor, 2 for fair,
 3 for good, and 4 for excellent
 
 \code{Visit2}:  Ordinal global rating at Visit 2: 0 for terrible, 1 for poor, 2 for fair,
@@ -36,16 +36,16 @@ A data frame with 10 variables.
 resp
 }
 \description{
-"The respiratory dataset is from a randomized clinical trial comparing a
-test treatment to control in the treatment of a chronic respiratory disorder
-\insertCite{koch_1989,stokes_2012}{winr}. In this trial, 111 patients
-(54 active, 57 placebo) at two centers were evaluated at baseline and four
-follow-up visits, and their respiratory status was assessed at every visit
-using an ordinal global rating (0 for terrible, 1 for poor, 2 for fair,
-3 for good, and 4 for excellent). The two centers correspond to a
-stratification factor; and baseline covariables for patients enrolled in the
-respiratory study are age, sex, and baseline respiratory status"
-\insertCite{kowalewski_2023}{winr}.
+The respiratory dataset originates from a randomized clinical trial that
+evaluated a test treatment against a control in managing a chronic respiratory
+condition \insertCite{koch_1989,stokes_2012}{winr}. The study involved 111
+patients—54 receiving the active treatment and 57 on a placebo—distributed
+across two centers. Assessments were conducted at baseline and during four
+subsequent follow-up visits. At each visit, patients' respiratory status was
+evaluated using an ordinal scale where 0 signifies 'terrible', 1 is 'poor',
+2 stands for 'fair', 3 represents 'good', and 4 denotes 'excellent'.
+The participating centers serve as stratification factors, and the baseline
+variables include age, sex, and initial respiratory status.
 }
 \references{
 {

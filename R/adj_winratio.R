@@ -1,6 +1,6 @@
 #' Adjusted win ratio
 #'
-#' Randomization-based adjustment of the win ratio for covariates and
+#' Randomization-based adjustment of the win ratio for baseline covariates and
 #' strata.
 #'
 #' @param data a dataframe or matrix containing the analysis data. Must be in
@@ -27,17 +27,18 @@
 #' adjustment is employed.
 #'
 #' @param strata a string indicating the name of the variable used for
-#' stratification. If not specified, defaults to NULL and no stratification is
-#' utilized.
+#' stratification. If not specified, defaults to NULL and no stratification adjustment
+#' is utilized.
 #'
 #' @param arm a string indicating the name of the variable for treatment arm.
 #' Treatment arm must be a positive integer such that the test treatment arm is
 #' ALWAYS higher in value than the control arm.
 #'
-#' @param method a string "small" or "large" used to denote the method employed.
-#' The small sample size method is recommended unless within-stratum sample size
-#' is reasonably large (e.g., >= 50), number of visits is small (e.g., <=6), and
-#' number of covariates is small (e.g., <=4). Defaults to "small."
+#' @param method a string "small" or "large" used to denote the sample size
+#' method employed. The small sample size method is recommended unless
+#' within-stratum sample size is reasonably large (e.g., >= 50), number of
+#' visits is small (e.g., <=6), and number of covariates is small (e.g., <=4).
+#' Defaults to "small."
 #'
 #' @param sig.level significance level (Type I error probability). Defaults to
 #' 0.05.

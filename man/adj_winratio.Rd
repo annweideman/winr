@@ -41,17 +41,18 @@ continuous scale. If not specified, defaults to NULL and no covariate
 adjustment is employed.}
 
 \item{strata}{a string indicating the name of the variable used for
-stratification. If not specified, defaults to NULL and no stratification is
-utilized.}
+stratification. If not specified, defaults to NULL and no stratification adjustment
+is utilized.}
 
 \item{arm}{a string indicating the name of the variable for treatment arm.
 Treatment arm must be a positive integer such that the test treatment arm is
 ALWAYS higher in value than the control arm.}
 
-\item{method}{a string "small" or "large" used to denote the method employed.
-The small sample size method is recommended unless within-stratum sample size
-is reasonably large (e.g., >= 50), number of visits is small (e.g., <=6), and
-number of covariates is small (e.g., <=4). Defaults to "small."}
+\item{method}{a string "small" or "large" used to denote the sample size
+method employed. The small sample size method is recommended unless
+within-stratum sample size is reasonably large (e.g., >= 50), number of
+visits is small (e.g., <=6), and number of covariates is small (e.g., <=4).
+Defaults to "small."}
 
 \item{sig.level}{significance level (Type I error probability). Defaults to
 0.05.}
@@ -69,7 +70,7 @@ logWR}
 \item{UCL_WR}{upper bound of \eqn{(1-\alpha/2)\times 100\%} CI for WR}
 }
 \description{
-Randomization-based adjustment of the win ratio for covariates and
+Randomization-based adjustment of the win ratio for baseline covariates and
 strata.
 }
 \examples{
