@@ -1,9 +1,9 @@
 # winr
 
 # Method
-Randomization Based Methods for Covariance and Stratified Adjustment of Win Ratios and Win Odds for Ordinal Outcomes
+Randomization-Based Covariance Adjustment of Win Ratios and Win Odds for Randomized Multi-Visit Studies with Ordinal Outcomes
 
-# Author
+# Authors
 Ann Marie K. Weideman, Elaine K. Kowalewski, Gary G. Koch
 
 # Maintainer
@@ -38,7 +38,7 @@ An R package that performs randomization-based adjustment of the win ratio and w
 * `UCL_WR`: upper bound of $(1-\alpha)\times 100$% CI for `WR`
 
 # Installation
-Install the current release from CRAN (not recommended). Not published on CRAN as of 11/30/23:
+Install the current release from CRAN (not recommended). Not published on CRAN as of 09/15/2024.
 
 ```
 install.packages("winr")
