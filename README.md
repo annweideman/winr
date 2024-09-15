@@ -12,6 +12,10 @@ Ann Marie Weideman, anndo1(at)umbc.edu
 # Description
 An R package that performs randomization-based adjustment of the win ratio and win odds for covariates and strata.
 
+# References
+	1. Weideman, A.M.K., Kowalewski, E.K., & Koch, G.G. (2024). Randomization-based covariance adjustment of win ratios and win odds for 	randomized multi-visit studies with ordinal outcomes. Journal of Statistical Research, 58(1), 33–48. https://doi.org/10.3329/jsr.v58i1.75411.
+	2. Kowalewski, E.K., Weideman, A.M.K., & Koch, G.G. (2023). SAS macro for randomization-based methods for covariance and stratified adjustment 	of win ratios and win odds for ordinal outcomes. SESUG 2023 Proceedings, Paper 139-2023.
+
 **Inputs:**
 * `data`: a dataframe or matrix containing the analysis data. Must be in wide format such that a participant's repeated responses are in a single row, and each response is in a separate column.
 * `pid`: a string indicating the name of the variable corresponding to participant ID.
