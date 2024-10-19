@@ -38,7 +38,7 @@ An R package that performs randomization-based adjustment of the win ratio and w
 * `UCL_WR`: upper bound of $(1-\alpha)\times 100$% CI for `WR`
 
 # Installation
-Install the current release from CRAN (not recommended). Not published on CRAN as of 09/15/2024.
+Install the current release from CRAN (not recommended). Published to CRAN on 16-Oct-2024.
 
 ```
 install.packages("winr")
